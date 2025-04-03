@@ -12,7 +12,7 @@
   <script>
     function handleRedirect() {
       const urlParams = new URLSearchParams(window.location.search);
-      document.body.innerHTML = urlParams;
+      window.location.replace = "exp://" + urlParams;
     }
 
     // Run the function as soon as the page loads
