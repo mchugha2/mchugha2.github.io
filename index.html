@@ -4,19 +4,19 @@
   <title>Authenticating...</title>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body>
+  <p>Please wait while we redirect you back to the app...</p>
+  <p><a href="#" onclick="handleRedirect(); return false;">Click here if you are not redirected automatically.</a></p>
+
   <script>
     function handleRedirect() {
       const urlParams = new URLSearchParams(window.location.search);
-
       document.body.innerHTML = urlParams;
     }
 
     // Run the function as soon as the page loads
     handleRedirect();
   </script>
-</head>
-<body>
-  <p>Please wait while we redirect you back to the app...</p>
-  <p><a href="#" onclick="handleRedirect(); return false;">Click here if you are not redirected automatically.</a></p>
 </body>
 </html>
