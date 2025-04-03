@@ -6,40 +6,42 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <script>
     function handleRedirect() {
-      // --- Configuration ---
-      const appScheme = 'exp'; // <-- IMPORTANT: Replace with your app's scheme
-      // Optional: Specify a path if your AuthSession.makeRedirectUri included one
-      const appPath = ''; // <-- Example: Set to '' if no path
-      // ---------------------
+      const urlParams = new URLSearchParams(window.location.search);
+      const code = urlParams.get('code');
+      const error = urlParams.get('error');
+      const state = urlParams.get('state'); // Get the state param
 
-      const params = window.location.search; // Gets "?code=..." or "?error=..."
-      const hash = window.location.hash; // Gets "#access_token=..." (for implicit flow)
-
-      let redirectUrl = appScheme + '://';
-      if (appPath) {
-        redirectUrl += appPath;
+      if (!state) {
+          console.error("Error: State parameter missing in redirect.");
+          document.body.innerHTML = "<p>Error: Could not complete authentication. State parameter missing.</p>";
+          return;
       }
 
-      // Pass along the query parameters OR the hash fragment
-      if (params) {
-        redirectUrl += params;
-      } else if (hash) {
-         // Need to convert hash to query params for AuthSession typically
-         // Or handle fragment directly if your app/library supports it
-         // Simple conversion example (might need adjustment):
-         const hashParams = hash.substring(1); // Remove '#'
-         redirectUrl += '?' + hashParams;
-         // Or handle specific implicit flow params like access_token:
-         // const urlParams = new URLSearchParams(hash.substring(1));
-         // const accessToken = urlParams.get('access_token');
-         // if (accessToken) redirectUrl += '?access_token=' + encodeURIComponent(accessToken);
-         // // Add other params like state, token_type, expires_in etc. if needed
+      // Decode the state to get the target app URI (e.g., exp://...)
+      const targetAppUri = decodeURIComponent(state);
+
+      let redirectUrl = targetAppUri;
+
+      // Append the original query parameters (code or error)
+      if (code) {
+          redirectUrl += (redirectUrl.includes('?') ? '&' : '?') + 'code=' + encodeURIComponent(code);
+           // IMPORTANT: Also append the original state back - expo-auth-session expects it!
+           redirectUrl += '&state=' + encodeURIComponent(state); 
+      } else if (error) {
+          redirectUrl += (redirectUrl.includes('?') ? '&' : '?') + 'error=' + encodeURIComponent(error);
+          // Also append state on error
+           redirectUrl += '&state=' + encodeURIComponent(state); 
+      } else {
+          console.warn("No code or error parameter found.");
+          // Decide how to handle this - maybe redirect with an indicator?
+          // Or redirect anyway and let the app handle the lack of code/error
+           redirectUrl += (redirectUrl.includes('?') ? '&' : '?') + 'state=' + encodeURIComponent(state); 
       }
 
 
-      console.log('Redirecting to:', redirectUrl);
+      console.log('Redirecting to app:', redirectUrl);
 
-      // Perform the redirect to the app
+      // Perform the redirect to the app (Expo Go or standalone)
       window.location.replace(redirectUrl);
     }
 
