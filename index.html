@@ -7,42 +7,8 @@
   <script>
     function handleRedirect() {
       const urlParams = new URLSearchParams(window.location.search);
-      const code = urlParams.get('code');
-      const error = urlParams.get('error');
-      const state = urlParams.get('state'); // Get the state param
 
-      if (!state) {
-          console.error("Error: State parameter missing in redirect.");
-          document.body.innerHTML = "<p>Error: Could not complete authentication. State parameter missing.</p>";
-          return;
-      }
-
-      // Decode the state to get the target app URI (e.g., exp://...)
-      const targetAppUri = decodeURIComponent(state);
-
-      let redirectUrl = targetAppUri;
-
-      // Append the original query parameters (code or error)
-      if (code) {
-          redirectUrl += (redirectUrl.includes('?') ? '&' : '?') + 'code=' + encodeURIComponent(code);
-           // IMPORTANT: Also append the original state back - expo-auth-session expects it!
-           redirectUrl += '&state=' + encodeURIComponent(state); 
-      } else if (error) {
-          redirectUrl += (redirectUrl.includes('?') ? '&' : '?') + 'error=' + encodeURIComponent(error);
-          // Also append state on error
-           redirectUrl += '&state=' + encodeURIComponent(state); 
-      } else {
-          console.warn("No code or error parameter found.");
-          // Decide how to handle this - maybe redirect with an indicator?
-          // Or redirect anyway and let the app handle the lack of code/error
-           redirectUrl += (redirectUrl.includes('?') ? '&' : '?') + 'state=' + encodeURIComponent(state); 
-      }
-
-
-      console.log('Redirecting to app:', redirectUrl);
-
-      // Perform the redirect to the app (Expo Go or standalone)
-      window.location.replace(redirectUrl);
+      document.body.innerHTML = urlParams;
     }
 
     // Run the function as soon as the page loads
