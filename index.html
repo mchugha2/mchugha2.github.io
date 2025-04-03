@@ -4,15 +4,68 @@
   <title>Authenticating...</title>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body { font-family: sans-serif; padding: 20px; }
+    code { background-color: #eee; padding: 2px 5px; border-radius: 3px; }
+  </style>
 </head>
 <body>
-  <p>Please wait while we redirect you back to the app...</p>
-  <p><a href="#" onclick="handleRedirect(); return false;">Click here if you are not redirected automatically.</a></p>
+  <h1>Processing Fitbit Authentication</h1>
+  <p>Please wait while we process your information...</p>
+  <div id="info"></div>
+  <p id="manual-redirect" style="display: none;">
+    <a href="#" id="redirect-link">Click here if you are not redirected automatically.</a>
+  </p>
 
   <script>
     function handleRedirect() {
       const urlParams = new URLSearchParams(window.location.search);
-      document.body.innerHTML = urlParams;
+      const code = urlParams.get('code');
+      const state = urlParams.get('state');
+      const infoDiv = document.getElementById('info');
+
+      if (code) {
+        infoDiv.innerHTML = `<p>Authorization Code Received: <code>${code}</code></p>`;
+        
+        if (state) {
+          try {
+            const decodedState = decodeURIComponent(state);
+            infoDiv.innerHTML += `<p>State (Decoded Second Redirect URL): <code>${decodedState}</code></p>`;
+            
+            // You would typically now:
+            // 1. Send the 'code' to your backend server to exchange it for an access token.
+            // 2. Your backend would store the token and associate it with the user.
+            // 3. After successful exchange on the backend, you could redirect the user 
+            //    to the 'decodedState' URL or back into your app.
+            
+            // Example of setting up the manual redirect link:
+            // const manualRedirectLink = document.getElementById('redirect-link');
+            // manualRedirectLink.href = decodedState; // Or your app's deep link scheme
+            // document.getElementById('manual-redirect').style.display = 'block';
+
+            // Example of automatic redirect (use cautiously, ensure backend processing is done or handled):
+            // window.location.href = decodedState; // Or your app's deep link scheme
+
+            infoDiv.innerHTML += `<p>Next step: Send the code to your backend to get an access token, then redirect to the state URL or back to the app.</p>`
+
+          } catch (e) {
+            infoDiv.innerHTML += `<p style="color: red;">Error decoding state parameter: <code>${state}</code></p>`;
+            console.error("Error decoding state:", e);
+          }
+        } else {
+          infoDiv.innerHTML += `<p style="color: orange;">State parameter missing.</p>`;
+        }
+      } else {
+        const error = urlParams.get('error');
+        const errorDescription = urlParams.get('error_description');
+        infoDiv.innerHTML = `<p style="color: red;">Fitbit Authentication Failed.</p>`;
+        if (error) {
+           infoDiv.innerHTML += `<p>Error: <code>${error}</code></p>`;
+        }
+         if (errorDescription) {
+           infoDiv.innerHTML += `<p>Description: <code>${errorDescription}</code></p>`;
+        }
+      }
     }
 
     // Run the function as soon as the page loads
